@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  debian_host:
+    build:
+      context: .
+      dockerfile: ./debian/Dockerfile
+    container_name: debian_ssh
+    ports:
+      - "2222:22"
+    tty: true
+  almalinux_host:
+    build:
+      context: .
+      dockerfile: almalinux/Dockerfile
+    container_name: almalinux_ssh
+    ports:
+      - "2223:22"
+    tty: true
