@@ -2,7 +2,7 @@ import socket
 import time
 import subprocess
 
-def wait_for_ssh(host, port, timeout=300):
+def wait_for_ssh(host: str, port: int, timeout=300) -> bool:
     start_time = time.time()
     while time.time() - start_time < timeout:
         try:
@@ -12,7 +12,7 @@ def wait_for_ssh(host, port, timeout=300):
             time.sleep(1)
     return False
 
-def ssh_via_cli(private_key_path, user, host, port):
+def ssh_via_cli(private_key_path: str, user: str, host: str, port: int) -> bool:
     try:
         result = subprocess.run([
             'ssh',

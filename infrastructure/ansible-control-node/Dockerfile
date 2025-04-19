@@ -3,14 +3,12 @@ FROM debian:bullseye
 # Установим необходимые пакеты, включая Ansible
 RUN apt-get update && \
     apt-get install -y \
-        openssh-server \
         python3 \
         python3-pip \
+        openssh-client \
         curl \
         gnupg \
         lsb-release && \
-    mkdir /var/run/sshd && \
-    ssh-keygen -A && \
     pip3 install --no-cache-dir ansible
 
 # Создаем SSH-директорию для root
@@ -18,20 +16,14 @@ RUN mkdir -p /root/.ssh && \
     chmod 700 /root/.ssh && \
     chown -R root:root /root/.ssh
 
-# Копируем публичный ключ
-COPY ./ssh_keys/id_rsa.pub /root/.ssh/authorized_keys
+# Копируем готовую пару ключей (закрытый и публичный)
+COPY ./ssh_keys/id_rsa /root/.ssh/id_rsa
+COPY ./ssh_keys/id_rsa.pub /root/.ssh/id_rsa.pub
 
-# Устанавливаем правильные права
-RUN chmod 600 /root/.ssh/authorized_keys && \
-    chown root:root /root/.ssh/authorized_keys
+# Устанавливаем правильные права для ключей
+RUN chmod 600 /root/.ssh/id_rsa && \
+    chmod 644 /root/.ssh/id_rsa.pub && \
+    chown root:root /root/.ssh/id_rsa /root/.ssh/id_rsa.pub
 
-# Разрешаем вход по ключу и отключаем пароль
-RUN echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && \
-    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
-    echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
-
-# Открываем порт SSH
-EXPOSE 22
-
-# Запускаем SSH-демон
-CMD ["/usr/sbin/sshd", "-D"]
+# Запускаем bash при старте контейнера
+CMD ["/bin/bash"]

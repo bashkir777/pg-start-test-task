@@ -1,7 +1,7 @@
 FROM almalinux:8
 
-# Установим OpenSSH сервер и создадим хостовые ключи
-RUN dnf install -y openssh-server passwd && ssh-keygen -A
+# Установим OpenSSH сервер, Python и создадим хостовые ключи
+RUN dnf install -y openssh-server passwd python3 python3-pip && ssh-keygen -A
 
 # Создаем SSH-директорию для root
 RUN mkdir -p /root/.ssh && \

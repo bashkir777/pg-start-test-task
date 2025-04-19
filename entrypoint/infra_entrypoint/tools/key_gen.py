@@ -3,7 +3,7 @@ import shutil
 import subprocess
 import stat
 
-def generate_ssh_keypair(save_dir, private_key_name, bits=4096):
+def generate_ssh_keypair(save_dir: str, private_key_name: str, bits=4096) -> None:
     if not shutil.which("ssh-keygen"):
         raise RuntimeError("ERROR: ssh-keygen не найден. Установите OpenSSH или используйте альтернативный метод.")
 
@@ -25,7 +25,7 @@ def generate_ssh_keypair(save_dir, private_key_name, bits=4096):
     ]
 
     try:
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         print(f"INFO: Создан приватный ssh ключ: {private_key_path}")
         print(f"INFO: Создан публичный ssh ключ: {public_key_path}")
     except subprocess.CalledProcessError as e:

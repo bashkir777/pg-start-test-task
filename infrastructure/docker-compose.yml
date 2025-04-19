@@ -6,10 +6,9 @@ services:
       context: .
       dockerfile: ./ansible-control-node/Dockerfile
     container_name: ansible_control_node
-    ports:
-      - "2221:22"
     tty: true
     volumes:
+      - ../ansible-playbooks:/ansible-playbooks
       - ../pg-deployer:/pg-deployer
   debian_host:
     build:
@@ -17,7 +16,7 @@ services:
       dockerfile: ./debian/Dockerfile
     container_name: debian_ssh
     ports:
-      - "2222:22" # для отладки
+      - "2222:22"
     tty: true
   almalinux_host:
     build:
@@ -25,5 +24,5 @@ services:
       dockerfile: almalinux/Dockerfile
     container_name: almalinux_ssh
     ports:
-      - "2223:22" # для отладки
+      - "2223:22"
     tty: true
