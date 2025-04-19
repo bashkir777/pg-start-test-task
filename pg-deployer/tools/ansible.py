@@ -1,7 +1,7 @@
 import json
 import subprocess
 import os
-from typing import Any, Dict, List
+from typing import Dict, List
 
 
 def run_check_load_playbook(
