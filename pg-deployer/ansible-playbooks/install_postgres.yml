@@ -1,0 +1,44 @@
+- name: Кроссплатформенная установка PostgreSQL
+  hosts: all
+  become: false
+  gather_facts: true
+
+  vars:
+    postgres_data_dir: "{{ '/var/lib/pgsql/data' if ansible_os_family == 'RedHat' else '/var/lib/postgresql/data' }}"
+
+  tasks:
+    # Установка для Debian
+    - name: Установить PostgreSQL (Debian/Ubuntu)
+      apt:
+        name: [postgresql, postgresql-contrib]
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Установка для RHEL
+    - name: Установить PostgreSQL (RHEL/AlmaLinux)
+      dnf:
+        name: [postgresql-server, postgresql-contrib]
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    # Подготовка для всех ОС
+    - name: Создать директорию данных PostgreSQL
+      file:
+        path: "{{ postgres_data_dir }}"
+        owner: postgres
+        group: postgres
+        mode: '0700'
+        state: directory
+
+    # Инициализация БД через явный вызов su
+    - name: Инициализировать БД PostgreSQL
+      shell: |
+        if [ ! -f "{{ postgres_data_dir }}/PG_VERSION" ]; then
+          su - postgres -c "{{ '/usr/bin/initdb' if ansible_os_family == 'RedHat' else '/usr/lib/postgresql/$(ls /usr/lib/postgresql | sort -V | tail -n 1)/bin/initdb' }} -D {{ postgres_data_dir }}"
+        else
+          echo "База данных уже инициализирована"
+        fi
+      args:
+        executable: /bin/bash
+      register: initdb_result
+      changed_when: "'База данных уже инициализирована' not in initdb_result.stdout"

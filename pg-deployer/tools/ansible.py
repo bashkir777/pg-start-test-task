@@ -3,13 +3,7 @@ import subprocess
 import os
 from typing import Dict, List
 
-
-def run_check_load_playbook(
-        playbook_path: str,
-        inventory_path: str,
-        metrics_dir_path: str,
-        servers: List[str]
-) -> Dict[str, Dict[str, float]]:
+def run_playbook(playbook_path: str, inventory_path: str) -> subprocess.CompletedProcess[str]:
     cmd = [
         'ansible-playbook',
         playbook_path,
@@ -17,7 +11,19 @@ def run_check_load_playbook(
         '--verbose',
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    return subprocess.run(cmd, capture_output=True, text=True)
+
+# def run_install_postgres_playbook(playbook_path: str, inventory_path: str, server: str) -> None:
+#     run_playbook(playbook_path, inventory_path)
+
+def run_check_load_playbook(
+        playbook_path: str,
+        inventory_path: str,
+        metrics_dir_path: str,
+        servers: List[str]
+) -> Dict[str, Dict[str, float]]:
+
+    result = run_playbook(playbook_path, inventory_path)
 
     if result.returncode != 0:
         raise RuntimeError(f"ERROR: Ошибка выполнения Ansible playbook: {result.stderr}")
