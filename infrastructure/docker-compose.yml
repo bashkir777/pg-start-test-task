@@ -1,13 +1,23 @@
 version: "3.9"
 
 services:
+  ansible_control_node:
+    build:
+      context: .
+      dockerfile: ./ansible-control-node/Dockerfile
+    container_name: ansible_control_node
+    ports:
+      - "2221:22"
+    tty: true
+    volumes:
+      - ../pg-deployer:/pg-deployer
   debian_host:
     build:
       context: .
       dockerfile: ./debian/Dockerfile
     container_name: debian_ssh
     ports:
-      - "2222:22"
+      - "2222:22" # для отладки
     tty: true
   almalinux_host:
     build:
@@ -15,5 +25,5 @@ services:
       dockerfile: almalinux/Dockerfile
     container_name: almalinux_ssh
     ports:
-      - "2223:22"
+      - "2223:22" # для отладки
     tty: true
