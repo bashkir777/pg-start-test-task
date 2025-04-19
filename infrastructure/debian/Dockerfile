@@ -1,8 +1,13 @@
 FROM debian:bullseye
 
-# Установим OpenSSH сервер и создадим хостовые ключи
+# Установим необходимые пакеты, включая openssh, python и утилиты free/ip
 RUN apt-get update && \
-    apt-get install -y openssh-server python3 python3-pip && \
+    apt-get install -y \
+        openssh-server \
+        python3 \
+        python3-pip \
+        procps \
+        iproute2 && \
     mkdir /var/run/sshd && \
     ssh-keygen -A
 

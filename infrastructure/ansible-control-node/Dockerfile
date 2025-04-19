@@ -16,6 +16,8 @@ RUN mkdir -p /root/.ssh && \
     chmod 700 /root/.ssh && \
     chown -R root:root /root/.ssh
 
+ENV ANSIBLE_HOST_KEY_CHECKING=False
+
 # Копируем готовую пару ключей (закрытый и публичный)
 COPY ./ssh_keys/id_rsa /root/.ssh/id_rsa
 COPY ./ssh_keys/id_rsa.pub /root/.ssh/id_rsa.pub

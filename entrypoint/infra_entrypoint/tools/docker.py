@@ -34,8 +34,8 @@ def execute_command_in_container(container_name: str, command: str) -> str | Non
     try:
         result = subprocess.run(
             ['docker', 'exec', container_name, 'bash', '-c', command],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            # stdout=subprocess.PIPE,
+            # stderr=subprocess.PIPE,
             check=True,
             text=True
         )

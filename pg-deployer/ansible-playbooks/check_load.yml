@@ -1,0 +1,48 @@
+- name: Получение и сохранение метрик
+  hosts: all
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Собрать метрики
+      block:
+        - name: Получить имя хоста
+          shell: hostname
+          register: hostname
+          changed_when: false
+
+        - name: Получить память
+          shell: free -m | awk '/Mem:/ {print $7}'
+          register: memory
+          changed_when: false
+
+        - name: Получить диск
+          shell: df -m --output=avail / | tail -n 1
+          register: disk
+          changed_when: false
+
+        - name: Получить CPU
+          shell: top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}'
+          register: cpu
+          changed_when: false
+
+      always:
+        - name: Создать директорию для метрик на control-node
+          delegate_to: localhost
+          run_once: true
+          file:
+            path: "/tmp/server_metrics"
+            state: directory
+            mode: '0755'
+
+        - name: Записать метрики в файл на control-node
+          delegate_to: localhost
+          copy:
+            content: |
+              {
+                "host": "{{ hostname.stdout }}",
+                "memory": {{ memory.stdout }},
+                "disk": {{ disk.stdout }},
+                "cpu": {{ cpu.stdout }}
+              }
+            dest: "/tmp/server_metrics/{{ inventory_hostname }}.json"

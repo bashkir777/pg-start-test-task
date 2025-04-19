@@ -8,7 +8,6 @@ services:
     container_name: ansible_control_node
     tty: true
     volumes:
-      - ../ansible-playbooks:/ansible-playbooks
       - ../pg-deployer:/pg-deployer
   debian_host:
     build:
