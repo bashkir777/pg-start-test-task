@@ -10,6 +10,7 @@ check_load_playbook = os.path.join(ansible_playbooks_directory, 'check_load.yml'
 install_postgres_playbook = os.path.join(ansible_playbooks_directory, 'install_postgres_server.yml')
 install_postgres_client_playbook = os.path.join(ansible_playbooks_directory, 'install_postgres_client.yml')
 configure_postgres_playbook = os.path.join(ansible_playbooks_directory, 'configure_postgres_server.yml')
+assert_connection_established = os.path.join(ansible_playbooks_directory, 'assert_connection_established.yml')
 inventory = os.path.join(ansible_playbooks_directory, 'inventory.ini')
 
 if __name__ == "__main__":
@@ -92,4 +93,17 @@ if __name__ == "__main__":
         print(f"ERROR pg-deployer: Код возврата: {install_postgres_client_result.returncode}")
         print(f"ERROR pg-deployer: Стандартный вывод:\n{install_postgres_client_result.stdout}")
         print(f"ERROR pg-deployer: Стандартный поток ошибок:\n{install_postgres_client_result.stderr}")
+        exit(1)
+
+    print(f"INFO pg-deployer: Запускаем проверку подключения по TCP от нецелевого сервера к базе данных postgres на целевом сервере.")
+    assert_connection_established = ansible.run_playbook_with_extra_vars(assert_connection_established, inventory,
+                                                                     {'db_user': 'student', 'db_password': 'secure_password', 'db_host': postgres_hostname})
+
+    if configure_postgres_result.returncode == 0:
+        print("INFO pg-deployer: Соединение с базой данных на целевом сервере успешно установлено. Выполнена команда 'SELECT 1;'")
+    else:
+        print("ERROR pg-deployer: Не удалось установить соединение с базой данных на целевом хосте.")
+        print(f"ERROR pg-deployer: Код возврата: {configure_postgres_result.returncode}")
+        print(f"ERROR pg-deployer: Стандартный вывод:\n{configure_postgres_result.stdout}")
+        print(f"ERROR pg-deployer: Стандартный поток ошибок:\n{configure_postgres_result.stderr}")
         exit(1)

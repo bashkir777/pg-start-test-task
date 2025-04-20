@@ -1,0 +1,27 @@
+- name: Тест подключения к PostgreSQL с клиента
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    db_host: "{{ db_host }}"
+    db_user: "{{ db_user }}"
+    db_password: "{{ db_password }}"
+    db_name: "{{ db_name | default('postgres') }}"
+
+  tasks:
+    - name: Проверить наличие psql
+      command: which psql
+      register: psql_check
+      failed_when: psql_check.rc != 0
+      changed_when: false
+
+    - name: Тест подключения к PostgreSQL и выполнение SELECT 1
+      shell: |
+        PGPASSWORD="{{ db_password }}" psql -h {{ db_host }} -U {{ db_user }} -d {{ db_name }} -c 'SELECT 1;'
+      register: psql_test
+      changed_when: false
+      failed_when: psql_test.rc != 0
+
+    - name: Показать результат SELECT 1
+      debug:
+        var: psql_test.stdout_lines
