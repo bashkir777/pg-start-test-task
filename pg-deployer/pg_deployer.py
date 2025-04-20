@@ -48,5 +48,15 @@ if __name__ == "__main__":
         f.write("[all]\n")
         f.write(postgres_hostname + "\n")
 
-    print(f"INFO: Запускаем установку PostgreSQL на {postgres_hostname}")
-    ansible.run_playbook(install_postgres_playbook, inventory)
+    print(f"INFO: Запускаем установку PostgreSQL и инициализацию кластера на {postgres_hostname}")
+    install_postgres_result = ansible.run_playbook(install_postgres_playbook, inventory)
+
+    if install_postgres_result.returncode == 0:
+        print("INFO: Установка PostgreSQL и инициализация кластера завершена успешно.")
+    else:
+        print("ERROR: Установка PostgreSQL и инициализация кластера завершились с ошибкой.")
+        print(f"ERROR: Код возврата: {install_postgres_result.returncode}")
+        print(f"ERROR: Стандартный вывод:\n{install_postgres_result.stdout}")
+        print(f"ERROR: Стандартный поток ошибок:\n{install_postgres_result.stderr}")
+        exit(1)
+

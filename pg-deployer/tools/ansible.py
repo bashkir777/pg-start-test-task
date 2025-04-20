@@ -13,9 +13,6 @@ def run_playbook(playbook_path: str, inventory_path: str) -> subprocess.Complete
 
     return subprocess.run(cmd, capture_output=True, text=True)
 
-# def run_install_postgres_playbook(playbook_path: str, inventory_path: str, server: str) -> None:
-#     run_playbook(playbook_path, inventory_path)
-
 def run_check_load_playbook(
         playbook_path: str,
         inventory_path: str,
