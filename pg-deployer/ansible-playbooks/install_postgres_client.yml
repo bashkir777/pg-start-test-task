@@ -1,0 +1,19 @@
+- name: Кроссплатформенная установка клиента PostgreSQL
+  hosts: all
+  become: false
+  gather_facts: true
+
+  tasks:
+    # Установка клиента для Debian/Ubuntu
+    - name: Установить клиент PostgreSQL (Debian/Ubuntu)
+      apt:
+        name: postgresql-client
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Установка клиента для RHEL/AlmaLinux/CentOS
+    - name: Установить клиент PostgreSQL (RHEL/AlmaLinux)
+      dnf:
+        name: postgresql
+        state: present
+      when: ansible_os_family == "RedHat"
