@@ -106,8 +106,9 @@
 
 **Для успешной сборки необходимо установить:**
 
-- `Docker`
-- `python3`, `pip`
+- `Docker`.
+- `python3`, `pip`.
+- утилита `ssh-keygen` (почти всегда предустановлена на любой современной ОС).
 
 ### Шаги сборки
 
@@ -123,25 +124,19 @@ git clone https://github.com/bashkir777/pg-start-test-task
 cd pg-start-test-task
 ```
 
-3. Установить необходимые зависимости
-
-```bash
-pip install -r entrypoint/requirements.txt
-```
-
-4. Убедиться, что docker демон запущен, если нет — запустить
+3. Убедиться, что docker демон запущен, если нет — запустить
 
 ```bash
 docker info
 ```
 
-5. Зайти в директорию `entrypoint`. **Обязательный шаг**
+4. Зайти в директорию `entrypoint`. **Обязательный шаг**
 
 ```bash
 cd entrypoint
 ```
 
-6. Запустить файл `main.py` и дождаться завершения работы.
+5. Запустить файл `main.py` и дождаться завершения работы.
 
 ```bash
 python3 main.py
