@@ -6,7 +6,8 @@ from tools import ansible
 service_metrics_directory = '/tmp/server_metrics'
 ansible_playbooks_directory = '/pg-deployer/ansible-playbooks'
 check_load_playbook = os.path.join(ansible_playbooks_directory, 'check_load.yml')
-install_postgres_playbook = os.path.join(ansible_playbooks_directory, 'install_postgres.yml')
+install_postgres_playbook = os.path.join(ansible_playbooks_directory, 'install_postgres_server.yml')
+configure_postgres_playbook = os.path.join(ansible_playbooks_directory, 'configure_postgres_server.yml')
 inventory = os.path.join(ansible_playbooks_directory, 'inventory.ini')
 
 if __name__ == "__main__":
@@ -60,3 +61,16 @@ if __name__ == "__main__":
         print(f"ERROR: Стандартный поток ошибок:\n{install_postgres_result.stderr}")
         exit(1)
 
+    print(f"INFO: Запускаем конфигурацию PostgreSQL и старт работы кластера на {postgres_hostname}")
+    configure_postgres_result = ansible.run_playbook_with_extra_vars(configure_postgres_playbook, inventory,
+                                                                     {'student_allowed_host': second_server
+                                                                     if postgres_hostname == first_server else first_server})
+
+    if configure_postgres_result.returncode == 0:
+        print("INFO: Кластер PostgreSQL успешно сконфигурирован и запущен.")
+    else:
+        print("ERROR: Конфигурация и запуск кластера PostgreSQL завершилась ошибкой.")
+        print(f"ERROR: Код возврата: {configure_postgres_result.returncode}")
+        print(f"ERROR: Стандартный вывод:\n{configure_postgres_result.stdout}")
+        print(f"ERROR: Стандартный поток ошибок:\n{configure_postgres_result.stderr}")
+        exit(1)

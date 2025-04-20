@@ -1,0 +1,81 @@
+- name: Настройка PostgreSQL для внешних подключений
+  hosts: all
+  become: false
+  gather_facts: true
+
+  vars:
+    postgres_data_dir: "{{ '/var/lib/pgsql/data' if ansible_os_family == 'RedHat' else '/var/lib/postgresql/data' }}"
+    postgres_conf_path: "{{ postgres_data_dir }}/postgresql.conf"
+    pg_hba_conf_path: "{{ postgres_data_dir }}/pg_hba.conf"
+    allowed_host: "{{ student_allowed_host }}"
+    postgres_bin_dir: "{{ '/usr/bin' if ansible_os_family == 'RedHat' else '/usr/lib/postgresql/$(ls /usr/lib/postgresql | sort -V | tail -n 1)/bin' }}"
+
+  tasks:
+    - name: Проверить, инициализирована ли БД PostgreSQL
+      stat:
+        path: "{{ postgres_data_dir }}/PG_VERSION"
+      register: pg_initialized
+
+    - name: Инициализировать БД PostgreSQL (если не инициализирована)
+      shell: |
+        su - postgres -c "{{ postgres_bin_dir }}/initdb -D {{ postgres_data_dir}}"
+      when: not pg_initialized.stat.exists
+
+    - name: Включить прослушивание всех IP в postgresql.conf
+      lineinfile:
+        path: "{{ postgres_conf_path }}"
+        regexp: '^#?listen_addresses\s*='
+        line: "listen_addresses = '*'"
+        state: present
+
+    - name: Очистить старые правила для пользователя student (если есть)
+      lineinfile:
+        path: "{{ pg_hba_conf_path }}"
+        state: absent
+        regexp: '^host\s+all\s+student\s+'
+
+    - name: Добавить правило для student (разрешить только указанный хост)
+      lineinfile:
+        path: "{{ pg_hba_conf_path }}"
+        line: "host    all             student         {{ allowed_host }}           md5"
+        state: present
+        insertbefore: "^host\\s+all\\s+all"
+
+    - name: Добавить правило reject для student (запретить все остальные подключения)
+      lineinfile:
+        path: "{{ pg_hba_conf_path }}"
+        line: "host    all             student         all                     reject"
+        state: present
+        insertbefore: "^host\\s+all\\s+all"
+
+    - name: Добавить общее правило (разрешить всем остальным пользователям доступ с любых IP)
+      lineinfile:
+        path: "{{ pg_hba_conf_path }}"
+        line: "host    all             all             all                     md5"
+        state: present
+
+    - name: Запустить PostgreSQL (если не запущен)
+      shell: |
+        su - postgres -c "{{ postgres_bin_dir }}/pg_ctl -D {{ postgres_data_dir }} start"
+      register: pg_start
+      changed_when: "'server started' in pg_start.stdout"
+      failed_when:
+        - "'already running' not in pg_start.stdout"
+        - "'server started' not in pg_start.stdout"
+
+    - name: Проверить статус PostgreSQL
+      shell: |
+        su - postgres -c "{{ postgres_bin_dir }}/pg_ctl -D {{ postgres_data_dir }} status"
+      register: pg_status
+      changed_when: false
+      ignore_errors: true
+
+    - name: Создать пользователя student (если не существует)
+      shell: |
+        su - postgres -c "{{ postgres_bin_dir }}/psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='student'\" | grep -q 1 || {{ postgres_bin_dir }}/psql -c \"CREATE USER student WITH PASSWORD 'secure_password';\""
+      when: "'no server running' not in pg_status.stderr"
+
+    - name: Назначить права пользователю student
+      shell: |
+        su - postgres -c "{{ postgres_bin_dir }}/psql -c \"GRANT ALL PRIVILEGES ON DATABASE postgres TO student;\""
+      when: "'no server running' not in pg_status.stderr"

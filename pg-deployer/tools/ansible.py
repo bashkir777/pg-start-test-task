@@ -13,6 +13,17 @@ def run_playbook(playbook_path: str, inventory_path: str) -> subprocess.Complete
 
     return subprocess.run(cmd, capture_output=True, text=True)
 
+def run_playbook_with_extra_vars(playbook_path: str, inventory_path: str, extra_vars: Dict[str, str]) -> subprocess.CompletedProcess[str]:
+    cmd = [
+        'ansible-playbook',
+        playbook_path,
+        '-i', inventory_path,
+        '--extra-vars', json.dumps(extra_vars),
+        '--verbose',
+    ]
+
+    return subprocess.run(cmd, capture_output=True, text=True)
+
 def run_check_load_playbook(
         playbook_path: str,
         inventory_path: str,
