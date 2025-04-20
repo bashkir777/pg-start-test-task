@@ -2,6 +2,7 @@ import os
 import sys
 
 from tools import ansible
+from tools import ip
 
 service_metrics_directory = '/tmp/server_metrics'
 ansible_playbooks_directory = '/pg-deployer/ansible-playbooks'
@@ -66,7 +67,7 @@ if __name__ == "__main__":
 
     print(f"INFO pg-deployer: Запускаем конфигурацию PostgreSQL и старт работы кластера на {postgres_hostname}")
     configure_postgres_result = ansible.run_playbook_with_extra_vars(configure_postgres_playbook, inventory,
-                                                                     {'student_allowed_host': postgres_client_hostname})
+                                                                     {'student_allowed_host': ip.get_container_ip(postgres_client_hostname)})
 
     if configure_postgres_result.returncode == 0:
         print("INFO pg-deployer: Кластер PostgreSQL успешно сконфигурирован и запущен.")

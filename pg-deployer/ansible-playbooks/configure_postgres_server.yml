@@ -37,7 +37,7 @@
     - name: Добавить правило для student (разрешить только указанный хост)
       lineinfile:
         path: "{{ pg_hba_conf_path }}"
-        line: "host    all             student         {{ allowed_host }}           md5"
+        line: "host    all             student         {{ allowed_host }}/32           md5"
         state: present
         insertbefore: "^host\\s+all\\s+all"
 
